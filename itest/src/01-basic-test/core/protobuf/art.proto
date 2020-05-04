@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package art;
+
+import "google/protobuf/timestamp.proto";
+
+service ArticleService {
+    rpc get (GetArticlesRequest) returns (GetArticlesResponse) {}
+}
+
+message GetArticlesRequest {
+    repeated string articles = 1;
+
+}
+
+message GetArticlesResponse {
+    repeated Article articles = 1;
+}
+
+message Article {
+    string id = 1;
+    google.protobuf.Timestamp createdAt = 2;
+}
