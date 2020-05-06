@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/tjarvstrand/mill-akka-grpc.svg?branch=master)](https://travis-ci.com/tjarvstrand/mill-akka-grpc)
+
 # mill-akka-grpc
 A module to build akka-grpc modules in mill.
 
