@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/tjarvstrand/mill-akka-grpc.svg?branch=master)](https://travis-ci.com/tjarvstrand/mill-akka-grpc)
+![Latest Version](https://img.shields.io/github/v/tag/tjarvstrand/mill-akka-grpc?include_prereleases&sort=semver)
 
 # mill-akka-grpc
 A module to build akka-grpc modules in mill.
