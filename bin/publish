@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+
+ROOT="$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)"
+MILL="$ROOT/mill"
+
+DEFAULT_USER="$(id -un)"
+USER=""
+read -p "Sonatype user ($DEFAULT_USER): " USER
+if [[ "$USER" == "" ]]; then
+   USER="$DEFAULT_USER"
+fi
+
+read -s -p "Sonatype password: " PASSWORD
+
+# GPG passphrase is prompted for by GPG
+
+$MILL mill.scalalib.PublishModule/publishAll \
+      --sonatypeCreds "$USER":"$PASSWORD"  \
+      --publishArtifacts "mill-akka-grpc[2.12.4].publishArtifacts"

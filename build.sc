@@ -30,13 +30,18 @@ def millVersion = "0.6.1"
 
 object `mill-akka-grpc` extends Cross[MillAkkaGrpc]("2.12.4")
 class MillAkkaGrpc(val crossScalaVersion: String) extends CrossScalaModule with PublishModule {
-//object `mill-akka-grpc` extends ScalaModule with PublishModule {
-//  def scalaVersion = "2.12.4"
-  def publishVersion = "0.1.0"
-  def mainClass = Some("com.github.tjarvstrand.mill.AkkaGrpcGenerator")
+  def publishVersion = "0.1.0-alpha"
 
   override def artifactName: T[String] = "mill-akka-grpc"
 
+  override def ivyDeps = Agg(
+    ivy"com.lightbend.akka.grpc::akka-grpc-codegen:0.8.4",
+    ivy"com.github.os72:protoc-jar:3.11.4",
+    ivy"com.lihaoyi::mill-scalalib:0.6.2",
+    ivy"com.lihaoyi::os-lib:0.6.2"
+  )
+
+  // Required for integration testing to publish to local maven repository
   def pomSettings = PomSettings(
     description = "Mill module for Akka GRPC",
     organization = "com.github.tjarvstrand",
@@ -46,13 +51,6 @@ class MillAkkaGrpc(val crossScalaVersion: String) extends CrossScalaModule with 
     developers = Seq(
       Developer("tjarvstrand", "Thomas Järvstrand","https://github.com/tjarvstrand")
     )
-  )
-
-  override def ivyDeps = Agg(
-    ivy"com.lightbend.akka.grpc::akka-grpc-codegen:0.8.4",
-    ivy"com.github.os72:protoc-jar:3.11.4",
-    ivy"com.lihaoyi::mill-scalalib:0.6.2",
-    ivy"com.lihaoyi::os-lib:0.6.2"
   )
 }
 
