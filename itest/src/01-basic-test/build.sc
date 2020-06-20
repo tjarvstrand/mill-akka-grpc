@@ -11,6 +11,9 @@ object core extends AkkaGrpcScalaModule {
   def scalaVersion = "2.13.2"
   def codeGenerationType = Client
   def mainClass = Some("com.example.Main")
+  def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"com.typesafe.akka::akka-actor:2.6.6"
+  )
 }
 
 def verify(): Command[Unit] = T.command {

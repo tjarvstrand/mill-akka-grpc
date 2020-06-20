@@ -9,6 +9,6 @@ object Main {
   def main(args: Array[String]): Unit = {
     val system = ActorSystem("01-basic-test")
     val service: GrpcClientSettings = GrpcClientSettings.connectToServiceAt("localhost", 1234)(system)
-    ArticleServiceClient(service)(Materializer.matFromSystem(system), system.dispatcher)
+    ArticleServiceClient(service)(system)
   }
 }

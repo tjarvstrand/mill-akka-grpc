@@ -42,7 +42,6 @@ class MillAkkaGrpc(val crossScalaVersion: String) extends CrossScalaModule with 
     ivy"com.lihaoyi::os-lib:0.7.0"
   )
 
-  // Required for integration testing to publish to local maven repository
   def pomSettings = PomSettings(
     description = "Mill module for Akka GRPC",
     organization = "com.github.tjarvstrand",
