@@ -2,11 +2,15 @@
 ![Latest Version](https://img.shields.io/github/v/tag/tjarvstrand/mill-akka-grpc?include_prereleases&sort=semver)
 
 # mill-akka-grpc
-A module to build akka-grpc modules in mill.
+
+A module to build akka-grpc modules in mill. Requires:
+
+  * akka >= 2.6.6
+  * mill >= 0.7.0
 
 ## Limitations
+
 * Only works for scala right now
-* Only works in mill versions < 0.7 because akka-grpc-codegen has not yet been published for scala 2.13
 
 ## Get started
 
@@ -18,7 +22,7 @@ import $ivy.`com.github.tjarvstrand::mill-akka-grpc:0.1.0`
 import com.github.tjarvstrand.mill._
 
 object app extends AkkaGrpcScalaModule {
-  def scalaVersion = "2.12.4"
+  def scalaVersion = "2.13.2"
   def codeGenerationType = CodeGenerationType.Client
 }
 ```

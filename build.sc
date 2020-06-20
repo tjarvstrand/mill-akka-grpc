@@ -23,22 +23,23 @@ DEALINGS IN THE SOFTWARE.
 */
 import mill._, scalalib._, publish._
 
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.2.1`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.3.1`
 import de.tobiasroeser.mill.integrationtest._
 
-def millVersion = "0.6.1"
+def millVersion = "0.7.3"
 
-object `mill-akka-grpc` extends Cross[MillAkkaGrpc]("2.12.4")
+object `mill-akka-grpc` extends Cross[MillAkkaGrpc]("2.13.2")
+
 class MillAkkaGrpc(val crossScalaVersion: String) extends CrossScalaModule with PublishModule {
-  def publishVersion = "0.1.0-alpha"
+  def publishVersion = "0.1.0"
 
   override def artifactName: T[String] = "mill-akka-grpc"
 
   override def ivyDeps = Agg(
-    ivy"com.lightbend.akka.grpc::akka-grpc-codegen:0.8.4",
+    ivy"com.lightbend.akka.grpc::akka-grpc-codegen:1.0.0",
     ivy"com.github.os72:protoc-jar:3.11.4",
-    ivy"com.lihaoyi::mill-scalalib:0.6.2",
-    ivy"com.lihaoyi::os-lib:0.6.2"
+    ivy"com.lihaoyi::mill-scalalib:0.7.3",
+    ivy"com.lihaoyi::os-lib:0.7.0"
   )
 
   // Required for integration testing to publish to local maven repository
@@ -59,5 +60,5 @@ object itest extends MillIntegrationTestModule {
     val ctx = T.ctx()
     ctx.env.get("TEST_MILL_VERSION").filterNot(_.isEmpty).getOrElse(millVersion)
   }
-  def pluginsUnderTest = Seq(`mill-akka-grpc`("2.12.4"))
+  def pluginsUnderTest = Seq(`mill-akka-grpc`("2.13.2"))
 }

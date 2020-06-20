@@ -38,7 +38,6 @@ import com.github.tjarvstrand.mill.CodeGenerationType.Client
 import com.github.tjarvstrand.mill.CodeGenerationType.Server
 import com.github.tjarvstrand.mill.Language.Java
 import com.github.tjarvstrand.mill.Language.Scala
-import coursier.MavenRepository
 import os.Path
 import protocbridge.Artifact
 import protocbridge.Generator
@@ -136,7 +135,7 @@ object AkkaGrpcGenerator {
     akkaGrpcRuntime +: (scalaDeps ++ stub)
   }
 
-  def run(protoDirs: Seq[Path],
+  def run(protoFiles: Seq[Path],
           outDir: Path,
           language: Language,
           codeGenerationType: CodeGenerationType,
@@ -149,16 +148,17 @@ object AkkaGrpcGenerator {
     val config = GeneratorConfig(language, codeGenerationType, settings)
     val extraGenerators_ = extraGenerators.map(GeneratorConfig.convertGenerator)
     os.makeDir.all(outDir)
-    protoDirs.foreach { protoDir =>
-      val targets = (config.generators ++ extraGenerators_).map { Target(_, outDir.toIO, config.settings) }
-      val files = os.walk(protoDir, skip = _.ext != "proto").toSet
-      println(s"Compiling ${files.size} protobuf files to $outDir")
-      runProtocBridge(protocVersion, files, protoDir +: protoIncludeDirs, protocOptions, targets, includeStandardTypes)
+    protoFiles.groupBy(p => Path(p.toNIO.getParent))
+      .filter { case (protoDir, _) => protoDir != null }
+      .foreach { case (protoDir, files) =>
+        val targets = (config.generators ++ extraGenerators_).map { Target(_, outDir.toIO, config.settings) }
+        println(s"Compiling ${files.size} protobuf files from $protoDir to $outDir")
+        runProtocBridge(protocVersion, files, protoDir +: protoIncludeDirs, protocOptions, targets, includeStandardTypes)
     }
   }
 
   def runProtocBridge(protocVersion: String,
-                      protoFiles: Set[Path],
+                      protoFiles: Seq[Path],
                       protoIncludes: Seq[Path],
                       protocOptions: Seq[String],
                       targets: Seq[Target],
@@ -170,7 +170,7 @@ object AkkaGrpcGenerator {
       val exitCode = ProtocBridge.run(
         args => Protoc.runProtoc(s"-v$protocVersion" +: args.toArray),
         targets,
-        includeFiles ++ protocOptions ++ includeStandardTypesSetting ++ protoFiles.map(_.toString),
+        includeFiles ++ protocOptions ++ includeStandardTypesSetting ++ protoFiles.distinct.map(_.toString),
         pluginFrontend = PluginFrontend.newInstance)
       if(exitCode != 0) {
         throw new RuntimeException(s"protoc exit code $exitCode")

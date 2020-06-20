@@ -25,11 +25,16 @@ package com.github.tjarvstrand.mill
 
 import akka.grpc.gen.CodeGenerator.ScalaBinaryVersion
 import com.github.tjarvstrand.mill.Language.Scala
+import coursier.MavenRepository
 import mill._
 import mill.api.Result
+import mill.api.Result.Failure
+import mill.api.Result.Success
+import mill.define.Sources
 import mill.scalalib._
 import os.Path
 import upickle.default._
+
 
 trait AkkaGrpcScalaModule extends ScalaModule {
 
@@ -38,12 +43,10 @@ trait AkkaGrpcScalaModule extends ScalaModule {
   /**
    * @return The directories where the module's protobuf definitions are located
    */
-  def protoDirs: T[Seq[Path]] = T {
-    Seq(
+  def protoDirs: Seq[Path] = Seq(
       millSourcePath / "src" / "main" / "protobuf",
       millSourcePath / "protobuf"
     ).filter(os.exists)
-  }
 
   /**
    * @return Additional directories where protobuf include files should be searched for
@@ -61,7 +64,7 @@ trait AkkaGrpcScalaModule extends ScalaModule {
   def protocOptions: T[Seq[String]] = T(Seq.empty[String])
 
   /**
-   * @return Whether or not to include the standard protof types from Google
+   * @return Whether or not to include the standard proto types from Google
    */
   def includeStandardTypes: T[Boolean] = T(true)
 
@@ -73,14 +76,33 @@ trait AkkaGrpcScalaModule extends ScalaModule {
   /**
    * @return Version of the akka-grpc runtime to use
    */
-  def akkaGrpcVersion: T[String] = T("0.8.4")
+  def akkaGrpcVersion: T[String] = T("1.0.0")
 
   /**
    * @return Version of the grpc library to use
    */
-  def grpcVersion: T[String] = T("1.28.1") // fixme this should be taken from the akka-grpc dependency on grpc-core
+  def grpcVersion: T[String] = T {
+    Lib.resolveDependencies(
+      Seq(
+        coursier.LocalRepositories.ivy2Local,
+        MavenRepository("https://repo1.maven.org/maven2")
+      ),
+      Lib.depToDependency(_, scalaVersion()),
+      Seq(ivy"com.lightbend.akka.grpc::akka-grpc-runtime:${akkaGrpcVersion()}")
+    ).map {
+      _.iterator.find(_.path.last.matches("""grpc-core-[0-9.]+\.jar"""))
+        .map { _.path.baseName.split("-").last }
+    } match {
+      case
+        Success(Some(version)) => Success(version)
+      case _ =>
+        Failure("Unable to deduce grpc version based on dependencies. Consider overriding grpcVersion explicitly")
+    }
+  }
 
   override def generatedSources = T { super.generatedSources() :+ compileAkkaGrpc() }
+
+  override def sources: Sources = T.sources { super.sources() ++ protoDirs.map(PathRef(_)) }
 
   override def ivyDeps = T {
     val deps = AkkaGrpcGenerator.suggestedDependencies(
@@ -96,7 +118,7 @@ trait AkkaGrpcScalaModule extends ScalaModule {
   private def compileAkkaGrpc: T[PathRef] = T {
     val outDir = T.dest
     AkkaGrpcGenerator.run(
-      protoDirs = protoDirs(),
+      protoFiles = protoFiles().map(_.path),
       outDir = outDir,
       language = Scala,
       codeGenerationType = codeGenerationType(),
@@ -107,5 +129,9 @@ trait AkkaGrpcScalaModule extends ScalaModule {
       protocOptions = protocOptions()
     )
     Result.Success(PathRef(outDir))
+  }
+
+  private def protoFiles: T[Seq[PathRef]] = T {
+    protoDirs.flatMap(os.walk(_, skip = _.ext != "proto")).map(PathRef(_))
   }
 }

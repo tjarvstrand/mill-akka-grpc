@@ -13,9 +13,13 @@ if [[ "$USER" == "" ]]; then
 fi
 
 read -s -p "Sonatype password: " PASSWORD
+echo
 
 # GPG passphrase is prompted for by GPG
 
 $MILL mill.scalalib.PublishModule/publishAll \
       --sonatypeCreds "$USER":"$PASSWORD"  \
-      --publishArtifacts "mill-akka-grpc[2.12.4].publishArtifacts"
+      --gpgArgs --passphrase=$GPG_PASSPHRASE,--batch,--yes,-a,-b \
+      --publishArtifacts __.publishArtifacts \
+      --release true \
+      --signed true
